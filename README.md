@@ -1,1 +1,283 @@
-# projeto-sistemas-embarcados
+# TerraGuard 🌧️⛰️
+
+Sistema IoT de monitoramento preventivo de risco de deslizamentos utilizando ESP32, MQTT, Flask e React.
+
+---
+
+# 📌 Sobre o Projeto
+
+O **TerraGuard** é um sistema embarcado e IoT desenvolvido para monitorar condições ambientais associadas ao risco de deslizamentos de terra em áreas vulneráveis.
+
+O sistema coleta dados de sensores instalados em uma área simulada e envia essas informações em tempo real para um dashboard web através do protocolo MQTT.
+
+O objetivo do projeto é fornecer uma solução de baixo custo para monitoramento preventivo de encostas e áreas de risco.
+
+---
+
+# 🎯 Objetivos
+
+* Monitorar condições ambientais em tempo real;
+* Detectar fatores associados a deslizamentos;
+* Exibir informações em um dashboard web;
+* Gerar alertas preventivos;
+* Demonstrar uma arquitetura IoT funcional utilizando ESP32.
+
+---
+
+# 🧠 Tecnologias Utilizadas
+
+## Hardware
+
+* ESP32
+* MPU6050
+* Sensor de Umidade de Solo
+* Sensor de Chuva
+* LED RGB
+* Protoboard
+* Jumpers
+
+---
+
+## Software
+
+* PlatformIO
+* Flask
+* React
+* Mosquitto
+* MQTT
+* Python
+* JavaScript
+* HTML/CSS
+
+---
+
+# 🏗️ Arquitetura do Sistema
+
+```text
+Sensores
+   ↓
+ESP32
+   ↓ MQTT
+Mosquitto Broker
+   ↓
+Backend Flask
+   ↓
+Dashboard React
+```
+
+---
+
+# 📡 Sensores Utilizados
+
+## 🌧️ Sensor de Chuva
+
+Responsável por detectar presença e intensidade de chuva.
+
+---
+
+## 🌱 Sensor de Umidade do Solo
+
+Responsável por medir a saturação do solo.
+
+---
+
+## 📐 MPU6050
+
+Responsável por detectar:
+
+* inclinação;
+* vibração;
+* possíveis movimentações do terreno.
+
+---
+
+# 🚨 Classificação de Risco
+
+| Chuva | Umidade | Inclinação | Risco   |
+| ----- | ------- | ---------- | ------- |
+| Baixa | Baixa   | Baixa      | Seguro  |
+| Média | Média   | Média      | Atenção |
+| Alta  | Alta    | Média      | Alto    |
+| Alta  | Alta    | Alta       | Crítico |
+
+---
+
+# 📂 Estrutura do Projeto
+
+```text
+terraguard/
+│
+├── README.md
+│
+├── backend/
+│   ├── app.py
+│   ├── mqtt_client.py
+│   └── requirements.txt
+│
+├── frontend/
+│   ├── src/
+│   ├── package.json
+│   └── vite.config.js
+│
+├── esp32/
+│   ├── platformio.ini
+│   └── src/
+│       └── main.cpp
+│
+├── docs/
+│
+└── schematics/
+```
+
+---
+
+# 🔌 MQTT
+
+## Tópicos MQTT
+
+```text
+terraguard/chuva
+terraguard/umidade
+terraguard/inclinacao
+terraguard/risco
+```
+
+---
+
+# ⚙️ Como Executar
+
+## 1. Instalar Dependências
+
+### Backend
+
+```bash
+cd backend
+pip install -r requirements.txt
+```
+
+---
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+```
+
+---
+
+# 🛰️ Executar Broker MQTT
+
+## Mosquitto
+
+```bash
+mosquitto -v
+```
+
+ou
+
+```bash
+docker compose up
+```
+
+---
+
+# ▶️ Rodar Backend
+
+```bash
+cd backend
+python app.py
+```
+
+API disponível em:
+
+```text
+http://localhost:5000/api/data
+```
+
+---
+
+# 💻 Rodar Frontend
+
+```bash
+cd frontend
+npm run dev
+```
+
+Dashboard disponível em:
+
+```text
+http://localhost:5173
+```
+
+---
+
+# 📲 Configuração do ESP32
+
+No arquivo:
+
+```text
+esp32/src/main.cpp
+```
+
+Configurar:
+
+```cpp
+const char* ssid = "SEU_WIFI";
+const char* password = "SUA_SENHA";
+
+const char* mqtt_server = "IP_DO_COMPUTADOR";
+```
+
+---
+
+# 🧪 Testes
+
+Durante o desenvolvimento inicial, dados simulados foram utilizados utilizando:
+
+```cpp
+random()
+```
+
+permitindo validar:
+
+* comunicação MQTT;
+* atualização em tempo real;
+* integração backend/frontend;
+* dashboard.
+
+---
+
+# 🚀 Funcionalidades Futuras
+
+* gráficos históricos;
+* alertas por Telegram;
+* alertas por email;
+* banco de dados;
+* mapa de risco;
+* autenticação;
+* suporte IPv6;
+* armazenamento em nuvem.
+
+---
+
+# 👥 Equipe
+
+- [@a-guy-and-his-computer](https://www.github.com/a-guy-and-his-computer)
+- [@lovepxdro](https://www.github.com/lovepxdro)
+- [@kaiquegb](https://www.github.com/kaiquegb)
+
+
+---
+
+# 📚 Disciplina
+
+Projeto desenvolvido para a disciplina de Sistemas Embarcados.
+
+CESAR School — 2026.
+
+---
+
+# 📄 Licença
+
+Projeto acadêmico desenvolvido para fins educacionais.
