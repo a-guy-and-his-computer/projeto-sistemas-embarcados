@@ -8,7 +8,7 @@ Sistema IoT de monitoramento preventivo de risco de deslizamentos utilizando ESP
 
 O **TerraGuard** é um sistema embarcado e IoT desenvolvido para monitorar condições ambientais associadas ao risco de deslizamentos de terra em áreas vulneráveis.
 
-O sistema coleta dados de sensores instalados em uma área simulada e envia essas informações em tempo real para um dashboard web através do protocolo MQTT.
+O sistema coleta dados de sensores arduino e envia essas informações em tempo real para um dashboard web através do protocolo MQTT.
 
 O objetivo do projeto é fornecer uma solução de baixo custo para monitoramento preventivo de encostas e áreas de risco.
 
