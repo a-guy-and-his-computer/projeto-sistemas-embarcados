@@ -1,5 +1,6 @@
 import paho.mqtt.client as mqtt
 import json
+import time
 
 # Dicionário consumido pelo app.py para retornar no endpoint /api/data
 sensor_data = {
@@ -10,14 +11,17 @@ sensor_data = {
 }
 
 # Em ambiente Docker, aponte para o nome do serviço do broker
-BROKER = 'mosquitto' 
+BROKER = 'localhost'  # Use 'mqtt-broker' se estiver usando Docker Compose
 PORT = 1883
 
 def on_connect(client, userdata, flags, rc):
-    print(f"Conectado ao broker MQTT com código: {rc}")
-    client.subscribe("terraguard/chuva")
-    client.subscribe("terraguard/umidade")
-    client.subscribe("terraguard/inclinacao")
+    if rc == 0:
+        print(f"Conectado ao broker MQTT com sucesso")
+        client.subscribe("terraguard/chuva")
+        client.subscribe("terraguard/umidade")
+        client.subscribe("terraguard/inclinacao")
+    else:
+        print(f"Falha ao conectar. Código: {rc}")
 
 def on_message(client, userdata, msg):
     topic = msg.topic
@@ -50,13 +54,24 @@ def start_mqtt():
     client.on_connect = on_connect
     client.on_message = on_message
 
-    # Conecta e inicia o loop em background de forma não bloqueante
-    client.connect(BROKER, PORT, 60)
-    client.loop_start()
+    try:
+        client.connect(BROKER, PORT, 60)
+        client.loop_start()
+        return client
+    except Exception as e:
+        print(f"Erro ao conectar: {e}")
+        return None
+
+def stop_mqtt(client):
+    if client:
+        client.loop_stop()
+        client.disconnect()
 
 if __name__ == "__main__":
-    start_mqtt()
-    # Loop dummy apenas para manter o script ativo se executado avulso
-    import time
-    while True:
-        time.sleep(1)
+    client = start_mqtt()
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("\nEncerrando...")
+        stop_mqtt(client)
