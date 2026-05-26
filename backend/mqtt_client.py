@@ -1,6 +1,7 @@
 import paho.mqtt.client as mqtt
 import json
 import time
+import os
 
 # Dicionário consumido pelo app.py para retornar no endpoint /api/data
 sensor_data = {
@@ -11,7 +12,7 @@ sensor_data = {
 }
 
 # Em ambiente Docker, aponte para o nome do serviço do broker
-BROKER = 'localhost'  # Use 'mqtt-broker' se estiver usando Docker Compose
+BROKER = os.environ.get('MQTT_BROKER', 'localhost')  # Use 'mqtt-broker' se estiver usando Docker Compose
 PORT = 1883
 
 def on_connect(client, userdata, flags, rc):
