@@ -1,26 +1,25 @@
 import paho.mqtt.client as mqtt
-import json
 import time
 import os
 
-# Dicionário consumido pelo app.py para retornar no endpoint /api/data
+# Dicionário atualizado para conter todos os dados enviados pela ESP32
 sensor_data = {
     "chuva": 0,
     "umidade": 0,
-    "inclinacao": 0,
-    "risco": "Seguro"
+    "accelX": 0.0, "accelY": 0.0, "accelZ": 0.0,
+    "gyroX": 0.0, "gyroY": 0.0, "gyroZ": 0.0,
+    "temperatura": 0.0,
+    "risco": "BAIXO"
 }
 
-# Em ambiente Docker, aponte para o nome do serviço do broker
-BROKER = os.environ.get('MQTT_BROKER', 'localhost')  # Use 'mqtt-broker' se estiver usando Docker Compose
+BROKER = os.environ.get('MQTT_BROKER', 'localhost')
 PORT = 1883
 
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
         print(f"Conectado ao broker MQTT com sucesso")
-        client.subscribe("terraguard/chuva")
-        client.subscribe("terraguard/umidade")
-        client.subscribe("terraguard/inclinacao")
+        # Subscreve no wildcard '#' para pegar TUDO dentro de terraguard/
+        client.subscribe("terraguard/#")
     else:
         print(f"Falha ao conectar. Código: {rc}")
 
@@ -29,26 +28,28 @@ def on_message(client, userdata, msg):
     payload = msg.payload.decode('utf-8')
     
     try:
-        value = int(payload)
-        
-        # Atualiza a métrica correta com base no tópico recebido
-        if topic == "terraguard/chuva":
-            sensor_data["chuva"] = value
-        elif topic == "terraguard/umidade":
-            sensor_data["umidade"] = value
-        elif topic == "terraguard/inclinacao":
-            sensor_data["inclinacao"] = value
-            
-        # Avaliação simples de risco baseada em limites hipotéticos
-        if sensor_data["chuva"] > 3000 or sensor_data["inclinacao"] > 2000:
-            sensor_data["risco"] = "Crítico 🚨"
+        # Lógica para tratar os diferentes tipos de dados
+        if topic == "terraguard/risco":
+            sensor_data["risco"] = payload
         else:
-            sensor_data["risco"] = "Seguro ✅"
+            # Tenta converter para float (abrange int e float)
+            value = float(payload)
             
-        print(f"[{topic}] recebido. Dados atuais: {sensor_data}")
+            # Mapeamento dos tópicos para as chaves do dicionário
+            if topic == "terraguard/chuva": sensor_data["chuva"] = int(value)
+            elif topic == "terraguard/umidade": sensor_data["umidade"] = int(value)
+            elif topic == "terraguard/accel/x": sensor_data["accelX"] = value
+            elif topic == "terraguard/accel/y": sensor_data["accelY"] = value
+            elif topic == "terraguard/accel/z": sensor_data["accelZ"] = value
+            elif topic == "terraguard/gyro/x": sensor_data["gyroX"] = value
+            elif topic == "terraguard/gyro/y": sensor_data["gyroY"] = value
+            elif topic == "terraguard/gyro/z": sensor_data["gyroZ"] = value
+            elif topic == "terraguard/temperatura": sensor_data["temperatura"] = value
+            
+        print(f"[{topic}] recebido: {payload}")
         
     except ValueError:
-        print("Erro ao processar o payload.")
+        print(f"Erro ao processar o payload '{payload}' no tópico '{topic}'")
 
 def start_mqtt():
     client = mqtt.Client()
@@ -67,12 +68,3 @@ def stop_mqtt(client):
     if client:
         client.loop_stop()
         client.disconnect()
-
-if __name__ == "__main__":
-    client = start_mqtt()
-    try:
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        print("\nEncerrando...")
-        stop_mqtt(client)
