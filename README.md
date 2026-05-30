@@ -146,6 +146,23 @@ terraguard/risco
 
 # ⚙️ Como Executar
 
+## 0. Mudar configurações da sua máquina
+
+### Código da ESP32
+
+Em esp32/src/main.cpp, mude:
+```bash
+const char* ssid = "NOME-SEU-WIFI"; // MUDAR
+const char* password = "SENHA-DO-SEU-WIFI"; // MUDAR
+
+const char* mqtt_server = "SEU-IPV4"; // MUDAR
+```
+
+e em esp32/platform.ini, mude:
+```bash
+upload_port = COM99 # MUDAR BASEADO NO PORT DO SEU DISPOSITIVO
+```
+
 ## 1. Instalar Dependências
 
 ### Backend

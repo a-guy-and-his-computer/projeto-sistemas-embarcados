@@ -62,7 +62,7 @@ function App() {
         
         <div style={getCardStyle('#3b82f6')}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#3b82f6' }}><CloudRain size={24}/> <h3>Chuva</h3></div>
-          <p style={{ fontSize: '28px', margin: '5px 0' }}>{currentData.chuva} <span style={{fontSize: '14px', opacity: 0.6}}>mm</span></p>
+          <p style={{ fontSize: '28px', margin: '5px 0' }}>{currentData.chuva}<span style={{fontSize: '14px', opacity: 0.6}}>%</span></p>
         </div>
 
         <div style={getCardStyle('#06b6d4')}>

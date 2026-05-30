@@ -28,25 +28,31 @@ def on_message(client, userdata, msg):
     payload = msg.payload.decode('utf-8')
     
     try:
-        # Lógica para tratar os diferentes tipos de dados
         if topic == "terraguard/risco":
             sensor_data["risco"] = payload
         else:
-            # Tenta converter para float (abrange int e float)
             value = float(payload)
             
-            # Mapeamento dos tópicos para as chaves do dicionário
-            if topic == "terraguard/chuva": sensor_data["chuva"] = int(value)
-            elif topic == "terraguard/umidade": sensor_data["umidade"] = int(value)
-            elif topic == "terraguard/accel/x": sensor_data["accelX"] = value
-            elif topic == "terraguard/accel/y": sensor_data["accelY"] = value
-            elif topic == "terraguard/accel/z": sensor_data["accelZ"] = value
-            elif topic == "terraguard/gyro/x": sensor_data["gyroX"] = value
-            elif topic == "terraguard/gyro/y": sensor_data["gyroY"] = value
-            elif topic == "terraguard/gyro/z": sensor_data["gyroZ"] = value
-            elif topic == "terraguard/temperatura": sensor_data["temperatura"] = value
+            if topic == "terraguard/chuva": 
+                # A ESP32 já envia em porcentagem, basta salvar o valor
+                sensor_data["chuva"] = int(value)
+                
+            elif topic == "terraguard/umidade": 
+                # Converte para 0-100% para o dashboard mostrar certinho
+                sensor_data["umidade"] = int((value / 4095.0) * 100)
+                
+            elif topic == "terraguard/accel/x": sensor_data["accelX"] = round(value, 2)
+            elif topic == "terraguard/accel/y": sensor_data["accelY"] = round(value, 2)
+            elif topic == "terraguard/accel/z": sensor_data["accelZ"] = round(value, 2)
+            elif topic == "terraguard/gyro/x": sensor_data["gyroX"] = round(value, 2)
+            elif topic == "terraguard/gyro/y": sensor_data["gyroY"] = round(value, 2)
+            elif topic == "terraguard/gyro/z": sensor_data["gyroZ"] = round(value, 2)
             
-        print(f"[{topic}] recebido: {payload}")
+            elif topic == "terraguard/temperatura": 
+                # Arredonda a temperatura para 1 casa decimal (ex: 26.5°C)
+                sensor_data["temperatura"] = round(value, 1)
+            
+        print(f"[{topic}] recebido e tratado: {sensor_data}")
         
     except ValueError:
         print(f"Erro ao processar o payload '{payload}' no tópico '{topic}'")
