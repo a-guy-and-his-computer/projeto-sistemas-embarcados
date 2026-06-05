@@ -9,7 +9,10 @@ sensor_data = {
     "accelX": 0.0, "accelY": 0.0, "accelZ": 0.0,
     "gyroX": 0.0, "gyroY": 0.0, "gyroZ": 0.0,
     "temperatura": 0.0,
-    "risco": "BAIXO"
+    "risco": "BAIXO",
+    "latencia_on": 0,
+    "latencia_o1": 0,
+    "heap_livre": 0
 }
 
 BROKER = os.environ.get('MQTT_BROKER', 'localhost')
@@ -47,6 +50,9 @@ def on_message(client, userdata, msg):
             elif topic == "terraguard/gyro/x": sensor_data["gyroX"] = round(value, 2)
             elif topic == "terraguard/gyro/y": sensor_data["gyroY"] = round(value, 2)
             elif topic == "terraguard/gyro/z": sensor_data["gyroZ"] = round(value, 2)
+            elif topic == "terraguard/perf/latencia_on": sensor_data["latencia_on"] = int(value) # Armazena a latência do método ineficiente (em ms)
+            elif topic == "terraguard/perf/latencia_o1": sensor_data["latencia_o1"] = int(value) #Armazena a latência do método O(1) (em ms)
+            elif topic == "terraguard/perf/heap": sensor_data["heap_livre"] = int(value) # Armazena a memória heap livre (em bytes)
             
             elif topic == "terraguard/temperatura": 
                 # Arredonda a temperatura para 1 casa decimal (ex: 26.5°C)

@@ -5,10 +5,10 @@
 #include <Adafruit_MPU6050.h>
 #include <Adafruit_Sensor.h>
 
-const char* ssid = "OI FIBRA_LOST"; 
-const char* password = "10251718"; 
+const char* ssid = "uaifai-tiradentes"; 
+const char* password = "bemvindoaocesar"; 
 
-const char* mqtt_server = "192.168.1.5"; 
+const char* mqtt_server = "172.26.68.17"; 
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -24,6 +24,54 @@ Adafruit_MPU6050 mpu;
 #define LED_G 26
 #define LED_B 27
 
+#define TAMANHO_BUFFER 2000 // Escala N exigida pelo professor de AA para teste de estresse
+
+// Vertente 1: Abordagem Ineficiente (Deslocamento O(n))
+class BufferIneficiente {
+  int* buffer;
+  int capacidade;
+  int contagem;
+public:
+  BufferIneficiente(int cap) : capacidade(cap), contagem(0) {
+    buffer = new int[capacidade];
+  }
+  ~BufferIneficiente() { delete[] buffer; }
+  
+  void adicionar(int valor) {
+    if (contagem < capacidade) {
+      buffer[contagem++] = valor;
+    } else {
+      // O grande vilão: Desloca TODOS os elementos para a esquerda
+      for (int i = 0; i < capacidade - 1; i++) {
+        buffer[i] = buffer[i + 1];
+      }
+      buffer[capacidade - 1] = valor;
+    }
+  }
+};
+
+// Vertente 2: Abordagem Eficiente (Buffer Circular O(1))
+class BufferCircular {
+  int* buffer;
+  int capacidade, head, count;
+public:
+  BufferCircular(int cap) : capacidade(cap), head(0), count(0) {
+    buffer = new int[capacidade];
+  }
+  ~BufferCircular() { delete[] buffer; }
+  
+  void adicionar(int valor) {
+    // Apenas atualiza o índice matematicamente (sem mover a memória)
+    buffer[head] = valor;
+    head = (head + 1) % capacidade;
+    if (count < capacidade) count++;
+  }
+};
+
+// Instanciação global dos buffers
+BufferIneficiente bufIn(TAMANHO_BUFFER);
+BufferCircular bufCirc(TAMANHO_BUFFER);
+
 struct SensorData {
     int chuva;
     int umidade;
@@ -36,6 +84,9 @@ struct SensorData {
     float temperatura;
     String risco;
     unsigned long timestamp;
+    unsigned long latenciaIneficiente; //nova métrica AA
+    unsigned long latenciaCircular; //nova métrica AA
+    uint32_t heapLivre; //nova métrica AA
 };
 
 QueueHandle_t sensorQueue;
@@ -135,6 +186,24 @@ void TaskReadSensors(void *pvParameters) {
             leituraChuva += analogRead(PINO_CHUVA);
             lecturaUmidade += analogRead(PINO_UMIDADE);
             vTaskDelay(10 / portTICK_PERIOD_MS);
+
+
+        // --- TESTE DE ALGORITMOS (Entregável 1) ---
+        unsigned long inicio;
+        
+        // Testa o método O(n)
+        inicio = micros();
+        bufIn.adicionar(data.chuva);
+        data.latenciaIneficiente = micros() - inicio;
+
+        // Testa o método O(1)
+        inicio = micros();
+        bufCirc.adicionar(data.chuva);
+        data.latenciaCircular = micros() - inicio;
+
+        // Mede a saúde da memória
+        data.heapLivre = ESP.getFreeHeap();
+        // ------------------------------------------
         }
         
         // --- MODIFICADO AQUI: CALIBRAÇÃO DA CHUVA VIA MAP ---
@@ -197,6 +266,9 @@ void TaskMQTT(void *pvParameters) {
             client.publish("terraguard/gyro/z", String(data.gyroZ).c_str());
             client.publish("terraguard/temperatura", String(data.temperatura).c_str());
             client.publish("terraguard/risco", data.risco.c_str());
+            client.publish("terraguard/perf/latencia_on", String(data.latenciaIneficiente).c_str()); // Publica a latência do método ineficiente
+            client.publish("terraguard/perf/latencia_o1", String(data.latenciaCircular).c_str()); // Publica a latência do método O(1)
+            client.publish("terraguard/perf/heap", String(data.heapLivre).c_str()); // Publica a memória heap livre
 
             Serial.println("MQTT publicado!");
         }

@@ -100,7 +100,27 @@ function App() {
           </ResponsiveContainer>
         </div>
       </div>
-
+      {/* SEÇÃO DA DISCIPLINA DE ANÁLISE DE ALGORITMOS */}
+      <div style={{ backgroundColor: '#1e293b', padding: '20px', borderRadius: '16px', maxWidth: '1200px', margin: '20px auto', border: '1px solid #f43f5e' }}>
+        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+          <h2 style={{ color: '#f43f5e' }}>Análise de Desempenho e Memória (O(n) vs O(1))</h2>
+          <div style={{ color: '#94a3b8' }}>Heap Livre: <b style={{color: '#f8fafc'}}>{currentData.heap_livre} bytes</b></div>
+        </div>
+        
+        <div style={{ width: '100%', height: 300, marginTop: '20px' }}>
+          <ResponsiveContainer>
+            <LineChart data={history}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+              <XAxis dataKey="time" stroke="#94a3b8" />
+              <YAxis stroke="#94a3b8" label={{ value: 'Latência (µs)', angle: -90, position: 'insideLeft', fill: '#94a3b8' }} />
+              <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '8px' }} />
+              <Legend />
+              <Line type="monotone" dataKey="latencia_on" stroke="#f43f5e" name="Array Shift O(n)" strokeWidth={3} dot={false} />
+              <Line type="monotone" dataKey="latencia_o1" stroke="#10b981" name="Ring Buffer O(1)" strokeWidth={3} dot={false} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
     </div>
   );
 }
