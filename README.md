@@ -265,7 +265,47 @@ permitindo validar:
 
 ---
 
-# 🚀 Funcionalidades Futuras
+# 📊 Análise de Algoritmos — Histórico de Telemetria
+ 
+Como extensão para a disciplina de Análise de Algoritmos, o TerraGuard implementa e compara duas abordagens para o gerenciamento do histórico de leituras dos sensores no ESP32.
+ 
+## Vertente 1 — Array com Deslocamento · O(n)
+ 
+A inserção de um novo dado exige o deslocamento de todos os elementos existentes no array. Para cada nova leitura, o microcontrolador executa **N − 1 operações de cópia**, resultando em complexidade de tempo linear:
+ 
+> **O(n)**
+ 
+Em cenários de gargalo de rede ou falha momentânea de conexão MQTT, o acúmulo de leituras pendentes faz com que o tempo de deslocamento de memória exceda a janela de amostragem, causando **jitter severo** e podendo acionar o **Watchdog Timer** (reinicialização da placa).
+ 
+## Vertente 2 — Buffer Circular · O(1)
+ 
+O Buffer Circular utiliza aritmética modular para calcular os índices de Head e Tail. A inserção de um novo elemento requer apenas a sobrescrita do valor no índice atual e o incremento circular do ponteiro:
+ 
+```
+index = (index + 1) mod N
+```
+ 
+Essa operação **não depende do tamanho do buffer**, resultando em complexidade de tempo constante:
+ 
+> **O(1)**
+ 
+Em situações de latência de rede, a implementação O(1) atua como amortecedor no padrão **Produtor-Consumidor**, absorvendo variações sem comprometer a estabilidade do sistema.
+ 
+## Comparativo
+ 
+| Critério              | Array com Deslocamento | Buffer Circular    |
+| --------------------- | ---------------------- | ------------------ |
+| Complexidade          | O(n)                   | O(1)               |
+| Uso de memória        | Alocação dinâmica      | Tamanho fixo       |
+| Estabilidade (N=20k)  | Latência crescente     | ~2 µs estável      |
+| Risco de WDT Reset    | Alto                   | Nenhum             |
+| Adequação ao ESP32    | Inadequada             | Recomendada        |
+ 
+Testes de estresse com **N = 20.000 amostras** confirmaram empiricamente que a latência da Vertente 1 escala linearmente, enquanto a Vertente 2 mantém performance estável próxima a **2 µs**, com heap livre estável.
+
+---
+
+# 🚀 Se o projeto avançar: Funcionalidades Futuras
 
 * gráficos históricos;
 * alertas por Telegram;
@@ -289,7 +329,7 @@ permitindo validar:
 
 # 📚 Disciplina
 
-Projeto desenvolvido para a disciplina de Sistemas Embarcados.
+Projeto desenvolvido para a disciplina de Sistemas Embarcados e Análise de Algorítimos.
 
 CESAR School — 2026.
 
